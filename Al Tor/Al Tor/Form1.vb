@@ -6,8 +6,8 @@ Imports System.Diagnostics
 
 
 Public Class Form1
-    Dim email As String = "" 'PUT THE BOT'S GMAIL HERE
-    Dim password As String = "" 'PUT THE BOT'S GMAIL PASSWORD HERE
+    Dim email As String = ""
+    Dim password As String = ""
     Dim outgoing As String = "smtp.gmail.com"
     Dim incoming As String = "pop.gmail.com"
 
@@ -15,8 +15,8 @@ Public Class Form1
     Dim firstActivate As Boolean = True
 
     Dim senderList() As String
-    Dim whitelist(0) As String 'CHANGE THE NUMBER TO YOUR WHITELIST SIZE
-    Dim whitelistBool(0) As Boolean 'CHANGE THE NUMBER TO YOUR WHITELIST SIZE
+    Dim whitelist(0) As String
+    Dim whitelistBool(0) As Boolean
 
     Dim messageCount As Integer
 
@@ -463,15 +463,6 @@ Public Class Form1
     End Function
 
     Private Sub btnStart_Click(sender As Object, e As EventArgs) Handles btnStart.Click
-        If firstLaunch Then
-            firstLaunch = False
-            'ENTER IN EACH WHITELISTED ADDRESS TO THE WHITELIST ARRAY FROM 0 TO THE END
-        End If
-
-        For i As Integer = 0 To whitelistBool.Length - 1
-            whitelistBool(i) = False
-        Next
-
         tmrTest.Start()
         tmrCountdown.Start()
         btnStart.Enabled = False
@@ -502,9 +493,9 @@ Public Class Form1
 
         For Each x In urlArray
             If x <> Nothing Then
-                'IF YOU'RE USING THE BOT FOR 1 TYPE OF TORRENT SEARCH FOR KEYWORDS
-                'IN x AND SET kingURL TO x IF IT'S FOUND; OTHERWISE, SET kingURL
-                'TO urlArray(0) AND SKIP THIS For-Each LOOP
+                'OPTIONAL FOR-EACH LOOP
+                'HERE, YOU CAN SEARCH FOR KEYWORDS IN THE TOP 3 TORRENTS IF YOU'D LIKE
+                'LOOK AT VAR x AND SET kingURL TO x IF IT'S FOUND
             End If
         Next
 
@@ -519,15 +510,38 @@ Public Class Form1
     Private Sub Form1_Activated(sender As Object, e As EventArgs) Handles Me.Activated
         If firstActivate Then
             firstActivate = False
+            firstLaunch = False
+
+            'NEED .txt FILE CALLED "config" IN THE DIRECTORY OF THE BOT; LINE 1 SHOULD BE THE
+            'BOT'S EMAIL AND LINE 2 THE EMAIL'S PASSWORD
+            If My.Computer.FileSystem.FileExists("config.txt") Then
+                Dim cfgReader As New System.IO.StreamReader("config.txt")
+                email = cfgReader.ReadLine()
+                password = cfgReader.ReadLine()
+            Else
+                MessageBox.Show("config.txt is missing. Please make it and on the first line, put the bot's email, and the second line, the bot's email's password.", "No Config", MessageBoxButtons.OK)
+                Me.Close()
+            End If
+
+            'NEED .txt FILE CALLED "whitelist" IN THE DIRECTORY OF THE BOT; EACH LINE IN THE .txt FILE SHOULD
+            'HAVE THE ADDRESS(ES) YOU'D LIKE WHITELISTED
+            If My.Computer.FileSystem.FileExists("whitelist.txt") Then
+                Dim count As Integer = 0
+                For Each white As String In IO.File.ReadAllLines("whitelist.txt")
+                    ReDim Preserve whitelist(count)
+                    ReDim Preserve whitelistBool(count)
+                    count += 1
+                    whitelist(count - 1) = white
+                    whitelistBool(count - 1) = False
+                Next
+            Else
+                MessageBox.Show("whitelist.txt is missing. Please make it and, on each line, put the address of the account you'd like to whitelist", "No Whitelist", MessageBoxButtons.OK)
+                Me.Close()
+            End If
 
             'IF YOU MAKE A .txt FILE CALLED altorauto IN THE SAME DIRECTORY AS THE BOT THE
             'BOT WILL AUTO-RUN WHEN LAUCNHED
             If My.Computer.FileSystem.FileExists("altorauto.txt") Then
-                If firstLaunch Then
-                    firstLaunch = False
-                    'ENTER IN EACH WHITELISTED ADDRESS TO THE WHITELIST ARRAY FROM 0 TO THE END
-                End If
-
                 For i As Integer = 0 To whitelistBool.Length - 1
                     whitelistBool(i) = False
                 Next

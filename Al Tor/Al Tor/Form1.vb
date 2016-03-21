@@ -47,8 +47,8 @@ Public Class Form1
     Dim tempInt As Integer
 
     Dim torName As String
-    Dim curIntreval As Integer = 60000
-    Dim countDown As Integer = 60
+    Dim curIntreval As Integer = 10000
+    Dim countDown As Integer = 10
 
     Dim request() As System.Net.HttpWebRequest
     Dim responseWeb() As System.Net.HttpWebResponse
@@ -123,6 +123,7 @@ Public Class Form1
             countDown = 60
             tmrTest.Interval = curIntreval
         End Try
+        tmrReboot.Interval = rebootTime * 1000
         tmrReboot.Start()
         tmrTest.Start()
         tmrCountdown.Start()

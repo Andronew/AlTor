@@ -62,57 +62,68 @@ Public Class Form1
 
     Dim badSearchPage As Boolean = False
 
+    Dim rebootTime As Integer = 43200
+
     Private Sub tmrTest_Tick(sender As Object, e As EventArgs) Handles tmrTest.Tick
+        tmrReboot.Stop()
         tmrCountdown.Stop()
         tmrTest.Stop()
         curIntreval = 300000 * Rnd() + 30000 'GENERATES RANDOM INT BETWEEN 30,000ms AND 60,000ms FOR THE CHECK INTREVAL
         countDown = (curIntreval / 1000) - 1 'CONVERTS THE ABOVE INT TO SECONDS
         tmrTest.Interval = curIntreval
-        If recieveMail() Then
-            txtDebug.AppendText(vbNewLine + "There's " + messageCount.ToString() + " new messages!")
-            tempCount = -1
-            For Each x In whitelistBool
-                tempCount += 1
-                If x Then
-                    Dim curTime As Integer = System.DateTime.Now.ToString("HH")
+        Try
+            If recieveMail() Then
+                txtDebug.AppendText(vbNewLine + "There's " + messageCount.ToString() + " new messages!")
+                tempCount = -1
+                For Each x In whitelistBool
+                    tempCount += 1
+                    If x Then
+                        Dim curTime As Integer = System.DateTime.Now.ToString("HH")
 
-                    If curTime > 17 And curTime < 24 Then
-                        response = "Good evening!"
+                        If curTime > 17 And curTime < 24 Then
+                            response = "Good evening!"
 
-                    ElseIf curTime >= 0 And curTime < 12 Then
-                        response = "Good morning!"
+                        ElseIf curTime >= 0 And curTime < 12 Then
+                            response = "Good morning!"
 
-                    Else
-                        response = "Good afternoon!"
+                        Else
+                            response = "Good afternoon!"
 
+                        End If
+
+                        response += " I will begin looking for: "
+
+                        If recieved.Length() <> 2 Then
+                            For y As Integer = 1 To recieved.Length() - 1
+                                If senderList(y).Equals(whitelist(tempCount)) Then
+                                    response += recieved(y) + ", "
+                                End If
+                            Next
+                        Else
+                            response += recieved(1)
+                        End If
+
+                        txtDebug.AppendText(vbNewLine + "Sending response """ + response + """ to " + whitelist(tempCount) + " !")
+                        sendMail(whitelist(tempCount), response)
                     End If
+                Next
 
-                    response += " I will begin looking for: "
+                getThatTorrent()
+            Else
+                txtDebug.AppendText(vbNewLine + "No new mail!")
+            End If
 
-                    If recieved.Length() <> 2 Then
-                        For y As Integer = 1 To recieved.Length() - 1
-                            If senderList(y).Equals(whitelist(tempCount)) Then
-                                response += recieved(y) + ", "
-                            End If
-                        Next
-                    Else
-                        response += recieved(1)
-                    End If
-
-                    txtDebug.AppendText(vbNewLine + "Sending response """ + response + """ to " + whitelist(tempCount) + " !")
-                    sendMail(whitelist(tempCount), response)
-                End If
+            For i As Integer = 0 To whitelistBool.Length - 1
+                whitelistBool(i) = False
             Next
 
-            getThatTorrent()
-        Else
-            txtDebug.AppendText(vbNewLine + "No new mail!")
-        End If
-
-        For i As Integer = 0 To whitelistBool.Length - 1
-            whitelistBool(i) = False
-        Next
-
+        Catch
+            txtDebug.AppendText(vbNewLine + "Failed to connect to gmail... retrying in 1 minute.")
+            curIntreval = 60000
+            countDown = 60
+            tmrTest.Interval = curIntreval
+        End Try
+        tmrReboot.Start()
         tmrTest.Start()
         tmrCountdown.Start()
     End Sub
@@ -465,6 +476,7 @@ Public Class Form1
     Private Sub btnStart_Click(sender As Object, e As EventArgs) Handles btnStart.Click
         tmrTest.Start()
         tmrCountdown.Start()
+        tmrReboot.Start()
         btnStart.Enabled = False
         btnStop.Enabled = True
     End Sub
@@ -472,6 +484,7 @@ Public Class Form1
     Private Sub btnStop_Click(sender As Object, e As EventArgs) Handles btnStop.Click
         tmrTest.Stop()
         tmrCountdown.Stop()
+        tmrReboot.Stop()
         txtCurAction.Text = Nothing
         btnStart.Enabled = True
         btnStop.Enabled = False
@@ -479,11 +492,14 @@ Public Class Form1
 
     Private Sub tmrCountdown_Tick(sender As Object, e As EventArgs) Handles tmrCountdown.Tick
         countDown -= 1
+        rebootTime -= 1
         If countDown <> 0 Then
             txtCurAction.Text = countDown.ToString() + " seconds until next check!"
         Else
             txtCurAction.Text = "Checking..."
         End If
+
+        txtReboot.Text = "Reboot: " + rebootTime.ToString() + "s"
     End Sub
 
     Private Function bestTorURL(ByVal urlArray() As String) As String
@@ -545,12 +561,27 @@ Public Class Form1
                 For i As Integer = 0 To whitelistBool.Length - 1
                     whitelistBool(i) = False
                 Next
-
+                tmrReboot.Start()
                 tmrTest.Start()
                 tmrCountdown.Start()
                 btnStart.Enabled = False
                 btnStop.Enabled = True
             End If
         End If
+    End Sub
+
+    'Reboot every 12 hours; recommended you have altorauto.txt in the directory so the bot starts again
+    Private Sub tmrReboot_Tick(sender As Object, e As EventArgs) Handles tmrReboot.Tick
+        tmrReboot.Stop()
+        tmrTest.Stop()
+        tmrCountdown.Stop()
+        btnStart.Enabled = False
+        btnStop.Enabled = False
+
+        Me.Text = "Rebooting..."
+
+        Process.Start("Al Tor.exe")
+
+        Me.Close()
     End Sub
 End Class

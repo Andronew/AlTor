@@ -29,11 +29,13 @@ Partial Class Form1
         Me.btnStart = New System.Windows.Forms.Button()
         Me.btnStop = New System.Windows.Forms.Button()
         Me.tmrCountdown = New System.Windows.Forms.Timer(Me.components)
+        Me.tmrReboot = New System.Windows.Forms.Timer(Me.components)
+        Me.txtReboot = New System.Windows.Forms.TextBox()
         Me.SuspendLayout()
         '
         'tmrTest
         '
-        Me.tmrTest.Interval = 60000
+        Me.tmrTest.Interval = 10000
         '
         'txtDebug
         '
@@ -66,7 +68,7 @@ Partial Class Form1
         'btnStop
         '
         Me.btnStop.Enabled = False
-        Me.btnStop.Location = New System.Drawing.Point(150, 10)
+        Me.btnStop.Location = New System.Drawing.Point(93, 10)
         Me.btnStop.Name = "btnStop"
         Me.btnStop.Size = New System.Drawing.Size(75, 23)
         Me.btnStop.TabIndex = 3
@@ -77,11 +79,24 @@ Partial Class Form1
         '
         Me.tmrCountdown.Interval = 1000
         '
+        'tmrReboot
+        '
+        Me.tmrReboot.Interval = 43200000
+        '
+        'txtReboot
+        '
+        Me.txtReboot.Location = New System.Drawing.Point(177, 12)
+        Me.txtReboot.Name = "txtReboot"
+        Me.txtReboot.ReadOnly = True
+        Me.txtReboot.Size = New System.Drawing.Size(100, 20)
+        Me.txtReboot.TabIndex = 4
+        '
         'Form1
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(529, 212)
+        Me.Controls.Add(Me.txtReboot)
         Me.Controls.Add(Me.btnStop)
         Me.Controls.Add(Me.btnStart)
         Me.Controls.Add(Me.txtCurAction)
@@ -98,5 +113,6 @@ Partial Class Form1
     Friend WithEvents btnStart As System.Windows.Forms.Button
     Friend WithEvents btnStop As System.Windows.Forms.Button
     Friend WithEvents tmrCountdown As System.Windows.Forms.Timer
-
+    Friend WithEvents tmrReboot As Timer
+    Friend WithEvents txtReboot As TextBox
 End Class
